@@ -13,10 +13,15 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 // #include "pcl_conversions/pcl_conversions.h"
-
+// #include "pcl_ros/point_cloud.hpp"
+// #include "pcl_ros/transforms.hpp"
+// #include "pcl
+// #include "pcl-1.10/pcl/point_cloud.h"
 #include "compressed_depth_image_transport/codec.h"
 #include "compressed_depth_image_transport/compression_common.h"
 #include "compressed_image_transport/compression_common.h"
+#include "sensor_msgs/msg/point_cloud.hpp"
+#include "sensor_msgs/msg/point_cloud2.hpp"
 
 #include "zed_interfaces/msg/objects_stamped.hpp"
 
@@ -102,16 +107,40 @@ struct Param {
   int mask_padding_x;
   int mask_padding_y;
 };
+struct State {
+  bool isTargetTracked = false;
+  Pose T_cw; // world to cam (optical)
+  Pose T_cd; // zed cam to rear view frame
+  Pose T_wc;
+  Pose T_wo; // world to object (x-forwarding)
+  sensor_msgs::msg::PointCloud pcl_objects_removed;
+  int bbox_2d[4]; // rMin, cMin, rMax, cMax
+  rclcpp::Time zed_last_call_time;
+  rclcpp::Time server_last_call_time;
+};
 
 class ChasingInfoManager {
 private:
   Param param_;
+  State drone_state_;
+  cv::Mat decomp_depth_image_;
+  cv::Mat depth_image_masked_;
+  std::string depth_image_frame_id_;
+  u_int64_t depth_image_time_stamp_;
 
 public:
   ChasingInfoManager();
 
   void SetParameter(const std::string &global_frame_id, const int &mask_padding_x,
                     const int &mask_padding_y);
+  void DepthCallback(const sensor_msgs::msg::CameraInfo &camera_info,
+                     const zed_interfaces::msg::ObjectsStamped &zed_od);
+  void SetPose(const Pose &pose);
+  void SetObjectPose(const Pose &pose);
+  void SetDecompressedDepth(const cv::Mat &decompressed_depth);
+  void SetDepthFrameId(const std::string &frame_id) { depth_image_frame_id_ = frame_id; }
+  void SetDepthTimestamp(const u_int64_t &time_stamp) { depth_image_time_stamp_ = time_stamp; }
+  cv::Mat GetMaskedImage() { return decomp_depth_image_; }
 };
 } // namespace zed2_chasing_utils
 
