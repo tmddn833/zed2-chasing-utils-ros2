@@ -10,6 +10,8 @@
 #include "sensor_msgs/msg/compressed_image.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
+#include "pcl_ros/point_cloud.hpp"
+#include "pcl_ros/transforms.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 // #include "pcl_conversions/pcl_conversions.h"
@@ -108,7 +110,7 @@ struct Param {
   int mask_padding_y;
 };
 struct State {
-  bool isTargetTracked = false;
+  bool is_target_tracked = false;
   Pose T_cw; // world to cam (optical)
   Pose T_cd; // zed cam to rear view frame
   Pose T_wc;
@@ -127,18 +129,20 @@ private:
   cv::Mat depth_image_masked_;
   std::string depth_image_frame_id_;
   u_int64_t depth_image_time_stamp_;
+  std_msgs::msg::Header depth_image_header_;
 
 public:
   ChasingInfoManager();
 
-  void SetParameter(const std::string &global_frame_id, const int &mask_padding_x,
-                    const int &mask_padding_y);
+  void SetParameter(const std::string &global_frame_id, const int &pcl_stride,
+                    const int &mask_padding_x, const int &mask_padding_y);
   void DepthCallback(const sensor_msgs::msg::CameraInfo &camera_info,
                      const zed_interfaces::msg::ObjectsStamped &zed_od);
   void SetPose(const Pose &pose);
   void SetObjectPose(const Pose &pose);
   void SetDecompressedDepth(const cv::Mat &decompressed_depth);
   void SetDepthFrameId(const std::string &frame_id) { depth_image_frame_id_ = frame_id; }
+  void SetDepthImageHeader(const std_msgs::msg::Header &header) { depth_image_header_ = header; }
   void SetDepthTimestamp(const u_int64_t &time_stamp) { depth_image_time_stamp_ = time_stamp; }
   cv::Mat GetMaskedImage() { return decomp_depth_image_; }
 };
