@@ -20,26 +20,24 @@ zed2_chasing_utils::Zed2ChasingServer::Zed2ChasingServer()
 
   // Subscriber
   compressed_depth_image_subscriber_ =
-      new message_filters::Subscriber<sensor_msgs::msg::CompressedImage>(node_handle_,
-                                                                         "/depth_compressed_image");
+      new message_filters::Subscriber<sensor_msgs::msg::CompressedImage>(
+          node_handle_, "~/depth_compressed_image");
   camera_information_subscriber_ =
-      new message_filters::Subscriber<sensor_msgs::msg::CameraInfo>(node_handle_,
-                                                                    "/camera_info"); // TODO: QoS
+      new message_filters::Subscriber<sensor_msgs::msg::CameraInfo>(node_handle_, "~/camera_info");
   zed_object_subscriber_ = new message_filters::Subscriber<zed_interfaces::msg::ObjectsStamped>(
-      node_handle_, "/objects");
+      node_handle_, "~/objects");
 
   subscription_synchronizer_ =
       new message_filters::Synchronizer<CompressedImageMaskBoundingBoxSync>(
           CompressedImageMaskBoundingBoxSync(10), *this->compressed_depth_image_subscriber_,
           *this->camera_information_subscriber_, *this->zed_object_subscriber_);
-  subscription_synchronizer_->registerCallback(&Zed2ChasingServer::ZedSyncCallback,
-                                               this); // TODO: bind
+  subscription_synchronizer_->registerCallback(&Zed2ChasingServer::ZedSyncCallback, this);
 
   // Publisher
-  masked_points_publisher_ = create_publisher<sensor_msgs::msg::PointCloud>("/masked_points", 1);
-  masked_depth_image_publisher_ = image_transporter_.advertise("/masked_depth_image", 1);
+  masked_points_publisher_ = create_publisher<sensor_msgs::msg::PointCloud>("masked_points", 1);
+  masked_depth_image_publisher_ = image_transporter_.advertise("masked_depth_image", 1);
   object_position_publisher_ =
-      create_publisher<geometry_msgs::msg::PointStamped>("/target_position", 1);
+      create_publisher<geometry_msgs::msg::PointStamped>("target_position", 1);
 
   tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
   tf_listener_ptr_ = new tf2_ros::TransformListener(*tf_buffer_);
@@ -50,6 +48,7 @@ void zed2_chasing_utils::Zed2ChasingServer::ZedSyncCallback(
     const sensor_msgs::msg::CompressedImage &compressed_depth_image,
     const sensor_msgs::msg::CameraInfo &camera_info,
     const zed_interfaces::msg::ObjectsStamped &zed_object_detection) {
+  printf("HELLOHELLO\n");
   chasing_info_manager_.SetPose(this->tfCallBack(compressed_depth_image));
   chasing_info_manager_.SetObjectPose(this->tfObjectCallback(zed_object_detection));
   chasing_info_manager_.SetDecompressedDepth(this->DecompressDepthPng(compressed_depth_image));
