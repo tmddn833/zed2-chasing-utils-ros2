@@ -5,11 +5,11 @@ project(zed2_chasing_utils)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++17")
 set(CMAKE_BUILD_TYPE Release)
 
-if(OpenCV_VERSION VERSION_LESS "4.0")
+if (OpenCV_VERSION VERSION_LESS "4.0")
     add_definitions(-DOPENCV_VERSION_3_ZED)
-else()
+else ()
     add_definitions(-DOPENCV_VERSION_4_ZED)
-endif()
+endif ()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -40,11 +40,10 @@ install(FILES include/${PROJECT_NAME}/zed2_chasing_info_manager/zed2_chasing_inf
 add_library(zed2_chasing_server src/zed2_chasing_server/zed2_chasing_server.cpp)
 ament_target_dependencies(zed2_chasing_server rclcpp message_filters image_transport image_geometry sensor_msgs tf2_ros zed_interfaces)
 target_include_directories(zed2_chasing_server PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-$<INSTALL_INTERFACE:include>)
+        $<INSTALL_INTERFACE:include>)
 target_link_libraries(zed2_chasing_server zed2_chasing_info_manager)
 install(FILES include/${PROJECT_NAME}/zed2_chasing_server/zed2_chasing_server.h
-DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/zed2_chasing_server)
-
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/zed2_chasing_server)
 
 
 add_executable(zed2_chasing_server_node src/zed2_chasing_server/zed2_chasing_server_node.cpp)
