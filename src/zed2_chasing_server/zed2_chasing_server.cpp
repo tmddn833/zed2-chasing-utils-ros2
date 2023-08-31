@@ -8,9 +8,10 @@ zed2_chasing_utils::Zed2ChasingServer::Zed2ChasingServer()
     : Node("zed2_chasing_server"),
       node_handle_(std::shared_ptr<Zed2ChasingServer>(this, [](auto *) {})),
       image_transporter_(node_handle_) {
-
+  printf("HELLLOOO\n");
   // Read parameters from yaml
   get_parameter<std::string>("global_frame_id", param_.global_frame_id);
+  printf("GLOBAL FRAME ID %s \n",param_.global_frame_id.c_str());
   get_parameter<int>("pcl_stride", param_.pcl_stride);
   get_parameter<int>("mask_padding_x", param_.mask_padding_x);
   get_parameter<int>("mask_padding_y", param_.mask_padding_y);
@@ -48,13 +49,17 @@ void zed2_chasing_utils::Zed2ChasingServer::ZedSyncCallback(
     const sensor_msgs::msg::CompressedImage &compressed_depth_image,
     const sensor_msgs::msg::CameraInfo &camera_info,
     const zed_interfaces::msg::ObjectsStamped &zed_object_detection) {
-  printf("HELLOHELLO\n");
+  printf("1111111111111\n");
   chasing_info_manager_.SetPose(this->tfCallBack(compressed_depth_image));
+  printf("2222222222222\n");
   chasing_info_manager_.SetObjectPose(this->tfObjectCallback(zed_object_detection));
+  printf("33333333333333\n");
   chasing_info_manager_.SetDecompressedDepth(this->DecompressDepthPng(compressed_depth_image));
+  printf("444444444444\n");
   chasing_info_manager_.SetDepthImageHeader(this->GetDepthImageHeader(compressed_depth_image));
+  printf("55555555555555\n");
   chasing_info_manager_.DepthCallback(camera_info, zed_object_detection);
-
+  printf("666666666666666\n");
   if ((not isnan(chasing_info_manager_.GetObjectPose().getTranslation().x)) and
       (not isnan(chasing_info_manager_.GetObjectPose().getTranslation().y)) and
       (not isnan(chasing_info_manager_.GetObjectPose().getTranslation().z)))
@@ -70,10 +75,11 @@ void zed2_chasing_utils::Zed2ChasingServer::ZedSyncCallback(
 }
 zed2_chasing_utils::Pose zed2_chasing_utils::Zed2ChasingServer::tfCallBack(
     const sensor_msgs::msg::CompressedImage &compressed_depth_image) {
-
+  printf("AAAAAAAAAAAAAAAAA \n");
   rclcpp::Time current_sensor_time = compressed_depth_image.header.stamp;
   zed_call_time_ = current_sensor_time;
   geometry_msgs::msg::TransformStamped transfrom_temp;
+  printf("BBBBBBBBBBBBBBBBB \n");
   try {
     transfrom_temp = tf_buffer_->lookupTransform(
         param_.global_frame_id, compressed_depth_image.header.frame_id, current_sensor_time);
