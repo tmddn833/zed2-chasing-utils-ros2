@@ -5,6 +5,8 @@
 #ifndef ZED2_CHASING_UTILS_ZED2_CHASING_SERVER_H
 #define ZED2_CHASING_UTILS_ZED2_CHASING_SERVER_H
 
+#include "boost/make_shared.hpp"
+#include "boost/shared_ptr.hpp"
 #include "geometry_msgs/msg/point_stamped.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "message_filters/subscriber.h"
@@ -14,7 +16,6 @@
 #include "sensor_msgs/msg/point_cloud.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "zed2_chasing_utils/zed2_chasing_info_manager/zed2_chasing_info_manager.h"
-
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::CompressedImage,
                                                         sensor_msgs::msg::CameraInfo,
                                                         zed_interfaces::msg::ObjectsStamped>

@@ -8,13 +8,17 @@ zed2_chasing_utils::Zed2ChasingServer::Zed2ChasingServer()
     : Node("zed2_chasing_server"),
       node_handle_(std::shared_ptr<Zed2ChasingServer>(this, [](auto *) {})),
       image_transporter_(node_handle_) {
-  printf("HELLLOOO\n");
   // Read parameters from yaml
-  get_parameter<std::string>("global_frame_id", param_.global_frame_id);
-  printf("GLOBAL FRAME ID %s \n",param_.global_frame_id.c_str());
-  get_parameter<int>("pcl_stride", param_.pcl_stride);
-  get_parameter<int>("mask_padding_x", param_.mask_padding_x);
-  get_parameter<int>("mask_padding_y", param_.mask_padding_y);
+  this->declare_parameter("global_frame_id", "");
+  param_.global_frame_id = get_parameter("global_frame_id").get_value<std::string>();
+
+  this->declare_parameter("pcl_stride", 0);
+  param_.pcl_stride = get_parameter("pcl_stride").get_value<int>();
+  this->declare_parameter("mask_padding_x", 0);
+  param_.mask_padding_x = get_parameter("mask_padding_x").get_value<int>();
+  this->declare_parameter("mask_padding_y", 0);
+  param_.mask_padding_y = get_parameter("mask_padding_y").get_value<int>();
+
   // Update parameters of chasing information manager
   chasing_info_manager_.SetParameter(param_.global_frame_id, param_.pcl_stride,
                                      param_.mask_padding_x, param_.mask_padding_y);
@@ -49,37 +53,29 @@ void zed2_chasing_utils::Zed2ChasingServer::ZedSyncCallback(
     const sensor_msgs::msg::CompressedImage &compressed_depth_image,
     const sensor_msgs::msg::CameraInfo &camera_info,
     const zed_interfaces::msg::ObjectsStamped &zed_object_detection) {
-  printf("1111111111111\n");
   chasing_info_manager_.SetPose(this->tfCallBack(compressed_depth_image));
-  printf("2222222222222\n");
   chasing_info_manager_.SetObjectPose(this->tfObjectCallback(zed_object_detection));
-  printf("33333333333333\n");
   chasing_info_manager_.SetDecompressedDepth(this->DecompressDepthPng(compressed_depth_image));
-  printf("444444444444\n");
   chasing_info_manager_.SetDepthImageHeader(this->GetDepthImageHeader(compressed_depth_image));
-  printf("55555555555555\n");
+  //  printf("Compressed Depth Image Stamp:[sec] %d",compressed_depth_image.header.stamp.sec);
+  //  printf(" [nanosec]: %d\n",compressed_depth_image.header.stamp.nanosec);
   chasing_info_manager_.DepthCallback(camera_info, zed_object_detection);
-  printf("666666666666666\n");
   if ((not isnan(chasing_info_manager_.GetObjectPose().getTranslation().x)) and
       (not isnan(chasing_info_manager_.GetObjectPose().getTranslation().y)) and
       (not isnan(chasing_info_manager_.GetObjectPose().getTranslation().z)))
     object_position_publisher_->publish(
         GetGeometryPointMsgsFromPose(chasing_info_manager_.GetObjectPose()));
-
   if (not chasing_info_manager_.GetMaskedPointCloud().points.empty())
     masked_points_publisher_->publish(chasing_info_manager_.GetMaskedPointCloud());
-
   masked_depth_image_publisher_.publish(GetRosMsgsFromImage(
       chasing_info_manager_.GetMaskedImage(), sensor_msgs::image_encodings::TYPE_32FC1,
       compressed_depth_image.header.frame_id, compressed_depth_image.header.stamp));
 }
 zed2_chasing_utils::Pose zed2_chasing_utils::Zed2ChasingServer::tfCallBack(
     const sensor_msgs::msg::CompressedImage &compressed_depth_image) {
-  printf("AAAAAAAAAAAAAAAAA \n");
   rclcpp::Time current_sensor_time = compressed_depth_image.header.stamp;
   zed_call_time_ = current_sensor_time;
   geometry_msgs::msg::TransformStamped transfrom_temp;
-  printf("BBBBBBBBBBBBBBBBB \n");
   try {
     transfrom_temp = tf_buffer_->lookupTransform(
         param_.global_frame_id, compressed_depth_image.header.frame_id, current_sensor_time);
@@ -253,7 +249,35 @@ zed2_chasing_utils::Pose zed2_chasing_utils::Zed2ChasingServer::GetPoseFromGeome
 
 sensor_msgs::msg::Image zed2_chasing_utils::Zed2ChasingServer::GetRosMsgsFromImage(
     const cv::Mat &img, const std::string &encoding_type, const std::string &frame_id,
-    rclcpp::Time t) {}
+    rclcpp::Time t) {
+  sensor_msgs::msg::Image image;
+
+  sensor_msgs::msg::Image &imgMessage = image;
+  imgMessage.header.stamp = t;
+  imgMessage.header.frame_id = frame_id;
+  imgMessage.height = img.rows;
+  imgMessage.width = img.cols;
+  imgMessage.encoding = encoding_type;
+  int num = 1; // for endianness detection
+  imgMessage.is_bigendian = !(*(char *)&num == 1);
+  imgMessage.step = img.cols * img.elemSize();
+  size_t size = imgMessage.step * img.rows;
+  imgMessage.data.resize(size);
+
+  if (img.isContinuous())
+    memcpy((char *)(&imgMessage.data[0]), img.data, size);
+  else {
+    uchar *opencvData = img.data;
+    uchar *rosData = (uchar *)(&imgMessage.data[0]);
+    for (unsigned int i = 0; i < img.rows; i++) {
+      memcpy(rosData, opencvData, imgMessage.step);
+      rosData += imgMessage.step;
+      opencvData += img.step;
+    }
+  }
+  return image;
+}
+
 geometry_msgs::msg::PointStamped
 zed2_chasing_utils::Zed2ChasingServer::GetGeometryPointMsgsFromPose(
     const zed2_chasing_utils::Pose &pose) {

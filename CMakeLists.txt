@@ -51,5 +51,6 @@ target_link_libraries(zed2_chasing_server_node zed2_chasing_server)
 install(TARGETS zed2_chasing_server_node DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY param DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY rviz_config DESTINATION share/${PROJECT_NAME})
 
 ament_package()
