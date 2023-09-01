@@ -1,4 +1,4 @@
-/**:
+zed2_chasing_server_node:
   ros__parameters:
     global_frame_id: map
     pcl_stride: 3
