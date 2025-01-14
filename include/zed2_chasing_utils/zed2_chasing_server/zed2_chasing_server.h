@@ -18,7 +18,7 @@
 #include "zed2_chasing_utils/zed2_chasing_info_manager/zed2_chasing_info_manager.h"
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::CompressedImage,
                                                         sensor_msgs::msg::CameraInfo,
-                                                        zed_interfaces::msg::ObjectsStamped>
+                                                        zed_msgs::msg::ObjectsStamped>
     CompressedImageMaskBoundingBoxSync;
 
 namespace zed2_chasing_utils {
@@ -42,7 +42,7 @@ private:
   message_filters::Subscriber<sensor_msgs::msg::CompressedImage>
       *compressed_depth_image_subscriber_;
   message_filters::Subscriber<sensor_msgs::msg::CameraInfo> *camera_information_subscriber_;
-  message_filters::Subscriber<zed_interfaces::msg::ObjectsStamped> *zed_object_subscriber_;
+  message_filters::Subscriber<zed_msgs::msg::ObjectsStamped> *zed_object_subscriber_;
   message_filters::Synchronizer<CompressedImageMaskBoundingBoxSync> *subscription_synchronizer_;
 
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -55,10 +55,10 @@ private:
 
   void ZedSyncCallback(const sensor_msgs::msg::CompressedImage &compressed_depth_image,
                        const sensor_msgs::msg::CameraInfo &camera_info,
-                       const zed_interfaces::msg::ObjectsStamped &zed_od);
+                       const zed_msgs::msg::ObjectsStamped &zed_od);
 
   Pose tfCallBack(const sensor_msgs::msg::CompressedImage &compressed_depth_image);
-  Pose tfObjectCallback(const zed_interfaces::msg::ObjectsStamped &object_stamped);
+  Pose tfObjectCallback(const zed_msgs::msg::ObjectsStamped &object_stamped);
   cv::Mat DecompressDepthPng(const sensor_msgs::msg::CompressedImage &depth_image);
   static std_msgs::msg::Header
   GetDepthImageHeader(const sensor_msgs::msg::CompressedImage &depth_image) {

@@ -16,7 +16,7 @@ void zed2_chasing_utils::ChasingInfoManager::SetParameter(const std::string &glo
 }
 void zed2_chasing_utils::ChasingInfoManager::DepthCallback(
     const sensor_msgs::msg::CameraInfo &camera_info,
-    const zed_interfaces::msg::ObjectsStamped &zed_od) {
+    const zed_msgs::msg::ObjectsStamped &zed_od) {
   image_geometry::PinholeCameraModel model;
   model.fromCameraInfo(camera_info);
   double camera_cx = model.cx();

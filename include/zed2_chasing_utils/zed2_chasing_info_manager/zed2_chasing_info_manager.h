@@ -25,7 +25,7 @@
 #include "sensor_msgs/msg/point_cloud.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 
-#include "zed_interfaces/msg/objects_stamped.hpp"
+#include "zed_msgs/msg/objects_stamped.hpp"
 
 #include "algorithm"
 #include "cv_bridge/cv_bridge.h"
@@ -117,7 +117,7 @@ public:
   void SetParameter(const std::string &global_frame_id, const int &pcl_stride,
                     const int &mask_padding_x, const int &mask_padding_y);
   void DepthCallback(const sensor_msgs::msg::CameraInfo &camera_info,
-                     const zed_interfaces::msg::ObjectsStamped &zed_od);
+                     const zed_msgs::msg::ObjectsStamped &zed_od);
   void SetPose(const Pose &pose);
   void SetObjectPose(const Pose &pose);
   void SetDecompressedDepth(const cv::Mat &decompressed_depth);

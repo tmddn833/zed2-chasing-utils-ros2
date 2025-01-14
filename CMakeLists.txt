@@ -4,6 +4,7 @@ project(zed2_chasing_utils)
 #set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++17")
 set(CMAKE_BUILD_TYPE Release)
+set(CUDA_TOOLKIT_ROOT_DIR /usr/local/cuda-11.7)
 
 if (OpenCV_VERSION VERSION_LESS "4.0")
     add_definitions(-DOPENCV_VERSION_3_ZED)
@@ -21,7 +22,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(compressed_depth_image_transport REQUIRED)
 find_package(compressed_image_transport REQUIRED)
-find_package(zed_interfaces REQUIRED)
+find_package(zed_msgs REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(std_msgs REQUIRED)
 #find_package(PCL 1.10 REQUIRED)
@@ -30,7 +31,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 add_library(zed2_chasing_info_manager src/zed2_chasing_info_manager/zed2_chasing_info_manager.cpp)
-ament_target_dependencies(zed2_chasing_info_manager image_transport image_geometry compressed_depth_image_transport compressed_image_transport zed_interfaces sensor_msgs pcl_conversions std_msgs)
+ament_target_dependencies(zed2_chasing_info_manager image_transport image_geometry compressed_depth_image_transport compressed_image_transport zed_msgs sensor_msgs pcl_conversions std_msgs)
 target_include_directories(zed2_chasing_info_manager PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 target_link_libraries(zed2_chasing_info_manager)
@@ -38,7 +39,7 @@ install(FILES include/${PROJECT_NAME}/zed2_chasing_info_manager/zed2_chasing_inf
         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/zed2_chasing_info_manager)
 
 add_library(zed2_chasing_server src/zed2_chasing_server/zed2_chasing_server.cpp)
-ament_target_dependencies(zed2_chasing_server rclcpp message_filters image_transport image_geometry sensor_msgs tf2_ros zed_interfaces)
+ament_target_dependencies(zed2_chasing_server rclcpp message_filters image_transport image_geometry sensor_msgs tf2_ros zed_msgs)
 target_include_directories(zed2_chasing_server PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 target_link_libraries(zed2_chasing_server zed2_chasing_info_manager)
@@ -52,5 +53,6 @@ install(TARGETS zed2_chasing_server_node DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY param DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY rviz_config DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 ament_package()

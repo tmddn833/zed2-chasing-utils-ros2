@@ -29,7 +29,7 @@ zed2_chasing_utils::Zed2ChasingServer::Zed2ChasingServer()
           node_handle_, "~/depth_compressed_image");
   camera_information_subscriber_ =
       new message_filters::Subscriber<sensor_msgs::msg::CameraInfo>(node_handle_, "~/camera_info");
-  zed_object_subscriber_ = new message_filters::Subscriber<zed_interfaces::msg::ObjectsStamped>(
+  zed_object_subscriber_ = new message_filters::Subscriber<zed_msgs::msg::ObjectsStamped>(
       node_handle_, "~/objects");
 
   subscription_synchronizer_ =
@@ -52,7 +52,7 @@ zed2_chasing_utils::Zed2ChasingServer::Zed2ChasingServer()
 void zed2_chasing_utils::Zed2ChasingServer::ZedSyncCallback(
     const sensor_msgs::msg::CompressedImage &compressed_depth_image,
     const sensor_msgs::msg::CameraInfo &camera_info,
-    const zed_interfaces::msg::ObjectsStamped &zed_object_detection) {
+    const zed_msgs::msg::ObjectsStamped &zed_object_detection) {
   chasing_info_manager_.SetPose(this->tfCallBack(compressed_depth_image));
   chasing_info_manager_.SetObjectPose(this->tfObjectCallback(zed_object_detection));
   chasing_info_manager_.SetDecompressedDepth(this->DecompressDepthPng(compressed_depth_image));
@@ -93,7 +93,7 @@ zed2_chasing_utils::Pose zed2_chasing_utils::Zed2ChasingServer::tfCallBack(
   }
 }
 zed2_chasing_utils::Pose zed2_chasing_utils::Zed2ChasingServer::tfObjectCallback(
-    const zed_interfaces::msg::ObjectsStamped &object_stamped) {
+    const zed_msgs::msg::ObjectsStamped &object_stamped) {
   float temp_x{0.0}, temp_y{0.0}, temp_z{0.0};
   bool is_nan_head_pos = false;
   for (int idx = 0; idx < object_stamped.objects.size(); idx++) {
